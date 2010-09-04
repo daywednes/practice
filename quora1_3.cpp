@@ -65,6 +65,7 @@ const int MAXN = 30;
 int n, m;
 int a[MAXN][MAXN];
 int b[MAXN][MAXN];
+int ske[MAXN][MAXN];
 int res;
 int totalneed;
 
@@ -105,65 +106,84 @@ int isBad(int i, int j, int x, int y) {
     if(b[x-1][y] == 0 && b[x+1][y]==0) return 1;
   }
 
-
   return 0;
 }
-void go(int prevk1, int prevk2, int prevk3, int prevk4, int i, int j, int cnt);
 
-int stepx[300];
-int stepy[300];
-int isTheCase(int k1, int k2, int k3, int k4, int i, int j, int cnt) {
-  int v = k2-k1;
-  if(k2 == k3 && abs(v) != 2 && ((k3+v+4)%4) == k4) {
-    int k5 = (k4 + v + 4)%4;
-    int x = i+dx[k5];
-    int y = j+dy[k5];
-    if(b[x][y] == 0) {
-      printf("come here %d %d %d %d\n", i, j, x, y);
-      go(k2, k3, k4, k5, x, y, cnt+1);
-      return 1;
+
+int isOk(int i, int j, int k) {
+  fori(v, 4) if (v!=k) {
+    int x = i+dx[v];
+    int y = j+dy[v];
+
+    if(inside(x, y) && b[x][y] == 0) {
+      if(a[x][y] == 3 && ske[x][y] <= 1) return 0;
+      if(a[x][y] == 0 && ske[x][y] <= 2) return 0;
     }
   }
-  return 0;
+  return 1;
 }
 
-void go(int prevk1, int prevk2, int prevk3, int prevk4, int i, int j, int cnt) {
-  stepx[cnt] = i;
-  stepy[cnt] = j;
-  if(cnt == totalneed) {
-    if(a[i][j] == 3) {
-      res++;
-      printf("solution %d:\n", res);
-      for(int e=1; e<= cnt; e++) printf("%d %d\n", stepx[e], stepy[e]);
+void changeSke(int i, int j, int k) {
+  fori(v, 4) if (v!=k) {
+    int x = i+dx[v];
+    int y = j+dy[v];
+
+    if(inside(x, y) && b[x][y] == 0 && a[x][y] != 1) {
+      ske[x][y]--;
     }
+  }
+}
+
+void restoreSke(int i, int j, int k) {
+  fori(v, 4) if (v!=k) {
+    int x = i+dx[v];
+    int y = j+dy[v];
+
+    if(inside(x, y) && b[x][y] == 0 && a[x][y] != 1) {
+      ske[x][y]++;
+    }
+  }
+}
+
+void go(int i, int j, int cnt) {
+  if(cnt == totalneed) {
+    if(a[i][j] == 3)
+      res++;
     return;
   }
   b[i][j] = 1;
-  if(prevk1 >=0 && isTheCase(prevk1, prevk2, prevk3, prevk4, i, j, cnt)) {
-  } else {
-    fori(k, 4) {
-      int x = i+dx[k];
-      int y = j+dy[k];
-      if(inside(x, y) && b[x][y] == 0 && (a[x][y] == 0 || (a[x][y] == 3 && cnt == totalneed-1)) && !isBad(i, j, x, y)
-        && !isBad1(x, y, x+dx[k], y+dy[k], (k+3)%4, (k+1)%4))
-        go(prevk2, prevk3, prevk4, k, x, y, cnt+1);
+  fori(k, 4) {
+    int x = i+dx[k];
+    int y = j+dy[k];
+    if(inside(x, y) && b[x][y] == 0 && (a[x][y] == 0 || (a[x][y] == 3 && cnt == totalneed-1)) && !isBad(i, j, x, y)
+      && !isBad1(x, y, x+dx[k], y+dy[k], (k+3)%4, (k+1)%4) && isOk(i, j, k)) {
+      changeSke(i, j, k);
+      go(x, y, cnt+1);
+      restoreSke(i, j, k);
     }
   }
   b[i][j] = 0;
 }
 
 int main() {
-  //freopen("input.txt", "r", stdin);
-  //freopen("output.txt", "w", stdout);
+  //freopen("inp6.txt", "r", stdin);
   scanf("%d%d", &n, &m);
   fori(i,m)fori(j,n)scanf("%d", &a[i][j]);
+
   res=0;
-  memset(b, 0, sizeof(b));
   totalneed = m*n;
+  memset(b, 0, sizeof(b));
+  memset(ske, 0, sizeof(ske));
   fori(i,m)fori(j,n)if(a[i][j]==1) totalneed--,b[i][j]=2;
+  fori(i,m)fori(j,n)if(a[i][j]!=1) fori(k,4){
+    int x=i+dx[k];
+    int y=j+dy[k];
+    if(inside(x, y) && a[x][y]!=1) ske[i][j]++;
+  }
+
   printf("%d\n", totalneed);
   fori(i,m)fori(j,n)if(a[i][j]==2)
-    go(-1,-1,-2,-1,i,j,1);
+    go(i,j,1);
   printf("%d\n", res);
   fclose(stdin);
   return 0;

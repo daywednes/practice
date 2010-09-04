@@ -1,4 +1,3 @@
-
 #include <vector>
 #include <list>
 #include <map>
@@ -128,7 +127,7 @@ void go(int i, int j, int cnt) {
 }
 
 int main() {
-  freopen("input.txt", "r", stdin);
+  //freopen("input.txt", "r", stdin);
   scanf("%d%d", &n, &m);
   fori(i,m)fori(j,n)scanf("%d", &a[i][j]);
   res=0;
