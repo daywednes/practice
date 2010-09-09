@@ -36,6 +36,7 @@ int b[MAXN][MAXN];
 int ske[MAXN][MAXN];
 int res;
 int totalneed;
+int boundaryCnt;
 
 
 int dx[] = {-1, 0, 1, 0};
@@ -62,6 +63,8 @@ int isBad1(int i, int j, int x, int y, int k1, int k2) {
 }
 
 int isBad(int i, int j, int x, int y) {
+  if(boundaryCnt == 0)
+    return 0;
   if(x==0 && i==1 && y>0 && y<n-1) {
     if(b[0][y-1] == 0 && b[0][y+1] == 0) return 1;
   }
@@ -123,6 +126,8 @@ void go(int i, int j, int cnt) {
     return;
   }
   b[i][j] = 1;
+  if(i==0 || j==0 || i==m-1 || j==n-1) boundaryCnt++;
+
   fori(k, 4) {
     int x = i+dx[k];
     int y = j+dy[k];
@@ -133,15 +138,18 @@ void go(int i, int j, int cnt) {
       restoreSke(i, j, k);
     }
   }
+
+  if(i==0 || j==0 || i==m-1 || j==n-1) boundaryCnt--;
   b[i][j] = 0;
 }
 
 int main() {
-  //freopen("test.in3", "r", stdin);
+  freopen("test.in", "r", stdin);
   scanf("%d%d", &n, &m);
   fori(i,m)fori(j,n)scanf("%d", &a[i][j]);
 
   res=0;
+  boundaryCnt = 0;
   totalneed = m*n;
   memset(b, 0, sizeof(b));
   memset(ske, 0, sizeof(ske));
